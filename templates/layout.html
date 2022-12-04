@@ -11,12 +11,13 @@
       integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65"
       crossorigin="anonymous"
     />
-    <link rel="stylesheet" href="styles/styles.css" />
+    <link rel="stylesheet" href="./static/styles/styles.css" type="text/css">
   </head>
-  <body>
+  <body id="everything">
     <nav
       class="navbar sticky-top justify-content-end"
       style="background-color: #e3f2fd">
+      {% if session["user_id"] %}
       <ul class="nav nav-tabs">
         <li class="nav-item">
           <a href="./" 
@@ -47,6 +48,22 @@
           class="nav-link">Log Out</a>
         </li>
       </ul>
+      {% else %}
+      <ul class="nav nav-tabs">
+        <li class="nav-item">
+          <a href="./" 
+          class="nav-link active navbar-brand" aria-current="page">Bid Frenzy!</a>
+        </li>
+        <li class="nav-item">
+          <a href="./register" 
+          class="nav-link">Register</a>
+        </li>
+        <li class="nav-item">
+            <a href="./login" 
+            class="nav-link">Log In</a>
+        </li>
+      </ul>
+      {% endif %}
     </nav>
     <main class="container-fluid text-center">
         {% block main %}{% endblock %}

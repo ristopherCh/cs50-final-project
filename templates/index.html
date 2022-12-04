@@ -1,12 +1,31 @@
-{% extends "layout.html" %}
-{% block title %}
-    Home Page
-{% endblock %}
+{% extends "layout.html" %} {% block title %} Home Page {% endblock %} {% block
+main %}
+<p>{{ message }}</p>
+<!-- <h1>Welcome to Bid Frenzy!!</h1> -->
 
-{% block main %}
-<h1>Welcome to Bid Frenzy, {{ name }}</h1>
+{% if allItems %}
+<h2>Your items listed for sale:</h2>
+<div class="flex-container">
+{% for item in allItems %}
 
+  <div class="bordered">
+    <p>Name: {{ item['name'] }}</p>
+    <p>Description: {{ item['description'] }}</p>
+    <p>Asking Price: ${{ item['askingPrice'] }}</p>
+    <img src="{{ item['filename'] }}" width="500" />
+    <p>Bids for this item: {{ item['bidNumber'] }}</p>
+    <ul>
+    {% for bid in item['allBids'] %}
+      <div class="flex-row"><li>Offer made by <span>{{ bid['bidderName'] }}</span> at {{ bid['datetime'] }} for: <span>{{ bid['offerPrice'] }}</span> </li>
+      <button class="btn btn-primary" type="submit">Accept Bid</button>
+    </div>
+    {% endfor %}
+  </ul>
+  </div>
 
+{% endfor %} 
 
-
-{% endblock %}
+</div>
+{% else %}
+<h2>You have no items listed for sale.</h2>
+{% endif %} {% endblock %}
