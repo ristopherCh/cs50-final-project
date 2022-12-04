@@ -1,12 +1,41 @@
-{% extends "layout.html" %}
-{% block title %}
-    Create New Sale
-{% endblock %}
-
-{% block main %}
+{% extends "layout.html" %} {% block title %} Create New Sale {% endblock %} {%
+block main %}
 <h1>Create New Sale</h1>
 
+<h2>{{ thing }}</h2>
 
 
+<form action="/createsale" method="post" enctype="multipart/form-data">
+  <div class="">
+    <input
+      type="text"
+      autocomplete="off"
+      autofocus
+      class="form-control mx-auto w-auto m-3"
+      id="item-name"
+      name="item-name"
+      placeholder="Enter Item Name"
+    />
+    <textarea
+      class="form-control mx-auto w-50 m-3"
+      id="item-description"
+      name="item-description"
+      placeholder="Describe your item"
+      id=""
+      cols="30"
+      rows="10"
+    ></textarea>
+    <label for="item-photo">Upload a photo</label>
+    <input
+      type="file"
+      id="file"
+      name="file"
+    />
+    <input type="number" name="item-price" min="0.01" step="0.01" class="form-control mx-auto w-50 m-3" placeholder="Enter suggested price"/>
+    
+    
+    <button class="btn btn-primary" type="submit">Submit</button>
+  </div>
+</form>
 
 {% endblock %}

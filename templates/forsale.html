@@ -4,9 +4,24 @@ Your For Sale Page!
 {% endblock %}
 
 {% block main %}
-<h1>Your For Sale Page!</h1>
+{% if allItems %}
+<h2>All items available for sale:</h2>
+<div class="flex-container">
+{% for item in allItems %}
 
+  <div class="bordered" id="saleitem">
+    <p>Name: {{ item['name'] }}</p>
+    <p>Description: {{ item['description'] }}</p>
+    <p>Asking Price: ${{ item['askingPrice'] }}</p>
+    <img src="{{ item['filename'] }}" width="500" />
+    <form action="/forsale" method="post">
+        <input autocomplete="off" class="form-control mx-auto w-auto margin-top" name="biditem--{{ item['id'] }}" placeholder="Enter a bid for this item" type="number" min="0.01" step="0.01">
+        <button class="btn btn-primary margin-top margin-bottom" type="submit">Submit</button>
+    </form>
+  </div>
 
-
-
-{% endblock %}
+{% endfor %} 
+</div>
+{% else %}
+<h2>There are no items for sale!</h2>
+{% endif %} {% endblock %}
