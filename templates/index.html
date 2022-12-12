@@ -4,9 +4,11 @@ main %}
 <!-- <h1>Welcome to Bid Frenzy!!</h1> -->
 
 {% if allItems %}
+<h1>Welcome, {{ user_name }}!</h1>
+<br />
 <h2>Your items listed for sale:</h2>
 <div class="flex-container">
-{% for item in allItems %}
+  {% for item in allItems %}
 
   <div class="bordered">
     <p>Name: {{ item['name'] }}</p>
@@ -15,16 +17,21 @@ main %}
     <img src="{{ item['filename'] }}" width="500" />
     <p>Bids for this item: {{ item['bidNumber'] }}</p>
     <ul>
-    {% for bid in item['allBids'] %}
-      <div class="flex-row"><li>Offer made by <span>{{ bid['bidderName'] }}</span> at {{ bid['datetime'] }} for: <span>{{ bid['offerPrice'] }}</span> </li>
-      <button class="btn btn-primary" type="submit">Accept Bid</button>
-    </div>
-    {% endfor %}
-  </ul>
+      {% for bid in item['allBids'] %}
+      <div class="flex-row">
+        <li>
+          Offer made by <span>{{ bid['bidderName'] }}</span> at {{
+          bid['datetime'] }} for: <span>{{ bid['offerPrice'] }}</span>
+        </li>
+        <form action="/transactions" method="post">
+          <button class="btn btn-primary" type="submit" name="bidId" value="{{ bid['id'] }}" >Accept Bid</button>
+        </form>
+      </div>
+      {% endfor %}
+    </ul>
   </div>
 
-{% endfor %} 
-
+  {% endfor %}
 </div>
 {% else %}
 <h2>You have no items listed for sale.</h2>

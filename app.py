@@ -38,28 +38,22 @@ def after_request(response):
 @login_required
 def index():
     user_id = session["user_id"]
+    user_name = db.execute("SELECT username FROM users WHERE id = ?", user_id)
+    user_name = user_name[0]['username']
     allItems = db.execute("SELECT * FROM items WHERE ownerId = ? AND saleStatus = ?", user_id, "available")
     for item in allItems:
         item['filename'] = f"./static/saved/{item['filename']}"
         item['bidNumber'] = db.execute("SELECT COUNT(*) FROM bids WHERE sellerId = ? AND itemId = ? AND offerStatus = ?", user_id, item['id'], "active")
         item['bidNumber'] = item['bidNumber'][0]['COUNT(*)']
-        # item['bids'] = [1,2,3,4]
         item['allBids'] = db.execute("SELECT * FROM bids WHERE sellerId = ? AND itemId = ? AND offerStatus = ?", user_id, item['id'], "active")
-        for item in item['allBids']:
-            bidderName = db.execute("SELECT username FROM users WHERE id = ?", item['bidderId'])
+        for bid in item['allBids']:
+            bidderName = db.execute("SELECT username FROM users WHERE id = ?", bid['bidderId'])
             bidderName = bidderName[0]['username']
-            item['bidderName'] = bidderName
-    
-    print(allItems)
-    
-
-    
-    
+            bid['bidderName'] = bidderName
 
     # bidNumber = db.execute("SELECT COUNT(*) WHERE sellerId = ? AND itemId = ? AND offerStatus = ?", user_id, itemId, "active")
     
-    
-    return render_template("index.html", allItems=allItems)
+    return render_template("index.html", allItems=allItems, user_name=user_name)
 
 @app.route("/login", methods=["POST", "GET"])
 def login():
@@ -172,15 +166,49 @@ def offers():
     #     item['filename'] = f"./static/saved/{item['filename']}"
     
     allBids = db.execute("SELECT * FROM bids WHERE sellerId = ? AND offerStatus = ?", user_id, "active")
-    for bid in allBids:
-        print(bid)
 
 
     return render_template("offers.html")
 
-@app.route("/transactions")
+@app.route("/transactions", methods=["GET", "POST"])
 def transactions():
-    return render_template("transactions.html")
+    if request.method == "POST":
+        purchasedBid = request.form.to_dict()
+        
+        ## Get the bidId associated with the button clicked
+        for key, value in purchasedBid.items():
+            purchasedBidId = value
+        
+        itemId = db.execute("SELECT itemId FROM bids WHERE id = ?", int(purchasedBidId))
+        itemId = itemId[0]['itemId']
+        
+        ## Update SQL bids table
+        db.execute("UPDATE bids SET offerStatus = 'sold' WHERE id = ?", int(purchasedBidId))
+        db.execute("UPDATE bids SET offerStatus = 'unavailable' WHERE id != ?", int(purchasedBidId))
+
+        ## Update SQL items table
+        db.execute("UPDATE items SET saleStatus = 'sold' WHERE id = ?", int(itemId))
+
+        return render_template("transactions.html")    
+    else:
+        ## Write script to show all sold items
+        user_id = session["user_id"]
+        ## Write script to show all sold items
+        soldItems = db.execute("SELECT * FROM items WHERE ownerId = ? AND salestatus = 'sold'", user_id)
+        for item in soldItems:
+            item['filename'] = f"./static/saved/{item['filename']}"
+            itemId = item['id']
+            saleInfo = db.execute("SELECT * FROM bids WHERE itemId = ? AND offerStatus = 'sold'", itemId)
+            item['bidsInfo'] = saleInfo[0]
+            item['bidsInfo']['bidderName'] = db.execute("SELECT username FROM users WHERE id = ?", item['bidsInfo']['bidderId'])[0]['username']
+            print("here", item)
+        
+
+
+        ## Write script to show all purchased items
+
+
+        return render_template("transactions.html", soldItems = soldItems)
 
 @app.route("/createsale", methods=["GET", "POST"])
 def createsale():
@@ -202,6 +230,7 @@ def createsale():
             itemName = request.form.get("item-name")
             itemDescription = request.form.get("item-description")
             itemPrice = request.form.get("item-price")
+            itemPrice = '{:,.2f}'.format(float(itemPrice))
             itemStatus = "available"
             db.execute("INSERT INTO items (name, description, filename, ownerId, askingPrice, saleStatus) VALUES(?, ?, ?, ?, ?, ?)", itemName, itemDescription, filename, user_id, itemPrice, itemStatus)
 
@@ -213,7 +242,10 @@ def createsale():
 
 @app.route("/yourbids")
 def yourbids():
-    return render_template("yourbids.html")
+    user_id = session["user_id"]
+    your_bids = db.execute("SELECT * FROM bids LEFT JOIN items ON bids.itemId = items.id WHERE bids.bidderId = ?", user_id)
+    
+    return render_template("yourbids.html", your_bids=your_bids)
 
 
 

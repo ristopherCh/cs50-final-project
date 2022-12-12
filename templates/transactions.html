@@ -1,12 +1,21 @@
-{% extends "layout.html" %}
-{% block title %}
-Your Transactions
-{% endblock %}
-
+{% extends "layout.html" %} {% block title %} Your Transactions {% endblock %}
 {% block main %}
 <h1>Your Transactions</h1>
+<form action="/transactions"></form>
+<select class="form-select" name="transactions">
+  <option value="sold">Sold items</option>
+  <option value="bought">Bought items</option>
+</select>
+<div class="flex-container">
+  {% for item in soldItems %}
 
-
-
-
-{% endblock %}
+  <div class="bordered">
+    <p>Name: <span>{{ item['name'] }}</span></p>
+    <img src="{{ item['filename'] }}" width="500" />
+    <p>Description: <span>{{ item['description'] }}</span></p>
+    <p>Selling Price: <span>{{ item['bidsInfo']['offerPrice'] }}</span></p>
+    <p>Sold to: <span>{{ item['bidsInfo']['bidderName'] }}</span></p>
+    <p>Date sold: <span>{{ item['bidsInfo']['datetime'] }}</span></p>
+  </div>
+  {% endfor %} {% endblock %}
+</div>
