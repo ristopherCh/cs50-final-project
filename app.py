@@ -50,13 +50,8 @@ def index():
             bidderName = db.execute("SELECT username FROM users WHERE id = ?", bid['bidderId'])
             bidderName = bidderName[0]['username']
             bid['bidderName'] = bidderName
-    
-
-    
-    
 
     # bidNumber = db.execute("SELECT COUNT(*) WHERE sellerId = ? AND itemId = ? AND offerStatus = ?", user_id, itemId, "active")
-    
     
     return render_template("index.html", allItems=allItems, user_name=user_name)
 
@@ -201,17 +196,19 @@ def transactions():
         ## Write script to show all sold items
         soldItems = db.execute("SELECT * FROM items WHERE ownerId = ? AND salestatus = 'sold'", user_id)
         for item in soldItems:
+            item['filename'] = f"./static/saved/{item['filename']}"
             itemId = item['id']
             saleInfo = db.execute("SELECT * FROM bids WHERE itemId = ? AND offerStatus = 'sold'", itemId)
             item['bidsInfo'] = saleInfo[0]
-        print(soldItems)
+            item['bidsInfo']['bidderName'] = db.execute("SELECT username FROM users WHERE id = ?", item['bidsInfo']['bidderId'])[0]['username']
+            print("here", item)
         
 
 
         ## Write script to show all purchased items
 
 
-        return render_template("transactions.html")
+        return render_template("transactions.html", soldItems = soldItems)
 
 @app.route("/createsale", methods=["GET", "POST"])
 def createsale():

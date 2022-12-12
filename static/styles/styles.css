@@ -37,7 +37,7 @@ p {
     text-align: left !important;
 }
 
-.bordered ul li span {
+.bordered ul li span, .bordered p span {
     font-weight: bold;
 }
 
@@ -60,4 +60,10 @@ input[type='number'] {
 .ul-centered {
     text-align: center;
     list-style-position: inside;
+}
+
+.form-select {
+    width: 50%;
+    margin: auto;
+    margin-bottom: 10px;
 }
