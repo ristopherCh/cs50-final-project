@@ -1,11 +1,16 @@
 {% extends "layout.html" %} {% block title %} Home Page {% endblock %} {% block
 main %}
-<p>{{ message }}</p>
+
+
 <!-- <h1>Welcome to Bid Frenzy!!</h1> -->
 
 {% if allItems %}
 <h1>Welcome, {{ user_name }}!</h1>
-<br />
+
+<div class="alert alert-success" role="alert" id="index-alert">
+    {{ message }}
+</div>
+
 <h2>Your items listed for sale:</h2>
 <div class="flex-container">
   {% for item in allItems %}
@@ -13,7 +18,7 @@ main %}
   <div class="bordered">
     <p>Name: {{ item['name'] }}</p>
     <p>Description: {{ item['description'] }}</p>
-    <p>Asking Price: ${{ item['askingPrice'] }}</p>
+    <p>Asking Price: {{ item['askingPrice'] }}</p>
     <img src="{{ item['filename'] }}" width="500" />
     <p>Bids for this item: {{ item['bidNumber'] }}</p>
     <ul>
@@ -23,7 +28,7 @@ main %}
           Offer made by <span>{{ bid['bidderName'] }}</span> at {{
           bid['datetime'] }} for: <span>{{ bid['offerPrice'] }}</span>
         </li>
-        <form action="/transactions" method="post">
+        <form action="/index" method="post">
           <button class="btn btn-primary" type="submit" name="bidId" value="{{ bid['id'] }}" >Accept Bid</button>
         </form>
       </div>
@@ -33,6 +38,14 @@ main %}
 
   {% endfor %}
 </div>
+<script>
+  if(document.getElementById('index-alert').innerText === "") {
+    document.getElementById('index-alert').style.backgroundColor = "white"
+    document.getElementById('index-alert').style.border = "none"
+  }
+</script>
 {% else %}
 <h2>You have no items listed for sale.</h2>
+
+
 {% endif %} {% endblock %}

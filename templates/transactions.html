@@ -1,11 +1,29 @@
 {% extends "layout.html" %} {% block title %} Your Transactions {% endblock %}
 {% block main %}
+
 <h1>Your Transactions</h1>
+
+<div id="transactions_container"></div>
+
+<div class="alert alert-primary" role="alert">
+  {% for item in display %}
+  {{ item }}
+  <br><br>
+  {% endfor %}
+  
+
+</div>
+
+
+
 <form action="/transactions"></form>
 <select class="form-select" name="transactions">
   <option value="sold">Sold items</option>
   <option value="bought">Bought items</option>
 </select>
+
+
+
 <div class="flex-container">
   {% for item in soldItems %}
 
@@ -17,5 +35,9 @@
     <p>Sold to: <span>{{ item['bidsInfo']['bidderName'] }}</span></p>
     <p>Date sold: <span>{{ item['bidsInfo']['datetime'] }}</span></p>
   </div>
-  {% endfor %} {% endblock %}
+  {% endfor %} 
 </div>
+
+
+  {% endblock %}
+
