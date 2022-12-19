@@ -37,45 +37,53 @@ def after_request(response):
 @app.route("/index", methods=["POST", "GET"])
 @login_required
 def index():
+    # Get current user ID
     user_id = session["user_id"]
+    # Get current username
     user_name = db.execute("SELECT username FROM users WHERE id = ?", user_id)
     user_name = user_name[0]['username']
-    
 
+    # This runs when you click a link to the page:
     if request.method == 'GET':
+        # Get all owned, available items
         allItems = db.execute("SELECT * FROM items WHERE ownerId = ? AND saleStatus = ?", user_id, "available")
         for item in allItems:
+            # Fix image url
             item['filename'] = f"./static/saved/{item['filename']}"
+            # Get total number of bids per item
             item['bidNumber'] = db.execute("SELECT COUNT(*) FROM bids WHERE sellerId = ? AND itemId = ? AND offerStatus = ?", user_id, item['id'], "active")
             item['bidNumber'] = item['bidNumber'][0]['COUNT(*)']
+            # Get all bids for current item
             item['allBids'] = db.execute("SELECT * FROM bids WHERE sellerId = ? AND itemId = ? AND offerStatus = ?", user_id, item['id'], "active")
+            # For every bid on this one item...
             for bid in item['allBids']:
+                # Get the name of the bidder
                 bidderName = db.execute("SELECT username FROM users WHERE id = ?", bid['bidderId'])
                 bidderName = bidderName[0]['username']
                 bid['bidderName'] = bidderName
 
+        # No message is displayed
         message = ""
         return render_template("index.html", allItems=allItems, user_name=user_name, message=message)
     else: 
-        ## You've clicked "Accept Bid" on index.html
+        # You've clicked "Accept Bid" on index.html
         purchasedBid = request.form.to_dict()
-
-        ## Get the bidId associated with the button clicked
+        # Get the bidId associated with the button clicked
         for key, value in purchasedBid.items():
             purchasedBidId = value
         purchasedBidId = int(purchasedBidId)
-        
+        # Get the itemId for the button clicked
         itemId = db.execute("SELECT itemId FROM bids WHERE id = ?", purchasedBidId)
         itemId = itemId[0]['itemId']
         
-        # ## Update SQL bids table
-        # db.execute("UPDATE bids SET offerStatus = 'sold' WHERE id = ?", int(purchasedBidId))
-        # db.execute("UPDATE bids SET offerStatus = 'unavailable' WHERE id != ?", int(purchasedBidId))
+        # Update SQL bids table to reflect approved sale
+        db.execute("UPDATE bids SET offerStatus = 'sold' WHERE id = ?", int(purchasedBidId))
+        db.execute("UPDATE bids SET offerStatus = 'unavailable' WHERE id != ? AND itemId = ?", int(purchasedBidId), itemId)
 
-        # ## Update SQL items table
-        # db.execute("UPDATE items SET saleStatus = 'sold' WHERE id = ?", int(itemId))
+        # Update SQL items table to reflect approved sale
+        db.execute("UPDATE items SET saleStatus = 'sold' WHERE id = ?", int(itemId))
 
-        ## Copy/paste above
+        # This is all repeated. Clean this up.
         allItems = db.execute("SELECT * FROM items WHERE ownerId = ? AND saleStatus = ?", user_id, "available")
         for item in allItems:
             item['filename'] = f"./static/saved/{item['filename']}"
@@ -87,7 +95,7 @@ def index():
                 bidderName = bidderName[0]['username']
                 bid['bidderName'] = bidderName
 
-        ## START HERE CHRIS
+        ## This is for writing the string after selling the item
         itemName = db.execute("SELECT name FROM items WHERE id = ?", itemId)
         itemName = itemName[0]['name']
         itemBuyerId = db.execute("SELECT bidderId FROM bids WHERE id = ?", purchasedBidId)
@@ -133,7 +141,6 @@ def login():
     else:
         return render_template("login.html")
 
-
 @app.route("/register", methods=["GET", "POST"])
 def register():
 
@@ -173,18 +180,23 @@ def logout():
     # Redirect user to login form
     return redirect("/")
 
-
-
 #--------------------------------------------------------------------------------------
 
 @app.route("/forsale", methods=["GET", "POST"])
 def forsale():
-    if request.method == "POST":
-        user_id = session["user_id"]
-        allItems = db.execute("SELECT * FROM items WHERE ownerId != ? AND saleStatus = ?", user_id, "available")
-        for item in allItems:
+    user_id = session["user_id"]
+    allItems = db.execute("SELECT * FROM items WHERE ownerId != ? AND saleStatus = ?", user_id, "available")
+
+    ## Have I bid on this item before?
+    pastBids = db.execute("SELECT * FROM bids WHERE bidderId = ?", user_id)
+    for item in allItems:
             item['filename'] = f"./static/saved/{item['filename']}"
-        
+            pastBids = db.execute("SELECT * FROM bids WHERE bidderId = ? AND itemId = ?", user_id, item['id'])
+            if len(pastBids) > 0:
+                item['pastBids'] = pastBids
+    
+    ## When item is bid on:
+    if request.method == "POST":
         for key in request.form:
             if key.startswith('biditem'):
                 itemId = key.partition('--')[-1]
@@ -195,15 +207,22 @@ def forsale():
         sellerId = sellerId[0]['ownerId']
         
         db.execute("INSERT INTO bids (itemId, bidderId, sellerId, offerPrice, offerStatus, datetime) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)", itemId, user_id, sellerId, value, "active")
-    
 
-        return render_template("forsale.html", allItems=allItems)
-    else:
-        user_id = session["user_id"]
+        ## Have to replicate this code to get the updated database after the Insert above. Fix this.
         allItems = db.execute("SELECT * FROM items WHERE ownerId != ? AND saleStatus = ?", user_id, "available")
+        pastBids = db.execute("SELECT * FROM bids WHERE bidderId = ?", user_id)
         for item in allItems:
             item['filename'] = f"./static/saved/{item['filename']}"
-        return render_template("forsale.html", allItems=allItems)
+            pastBids = db.execute("SELECT * FROM bids WHERE bidderId = ? AND itemId = ?", user_id, item['id'])
+            if len(pastBids) > 0:
+                item['pastBids'] = pastBids
+
+        message='You have made a bid!'
+        return render_template("forsale.html", allItems=allItems, message=message)
+    
+    else:
+        message=''
+        return render_template("forsale.html", allItems=allItems, message=message)
 
 @app.route("/offers")
 def offers():
@@ -219,34 +238,41 @@ def offers():
 
 @app.route("/transactions", methods=["GET", "POST"])
 def transactions():
-    if request.method == "GET":
-        ## Write script to show all sold items
+    # if request.method == "GET":
         user_id = session["user_id"]
-        ## Write script to show all sold items
+        # Get all items you've sold
         soldItems = db.execute("SELECT * FROM items WHERE ownerId = ? AND salestatus = 'sold'", user_id)
-        for item in soldItems:
-            item['filename'] = f"./static/saved/{item['filename']}"
-            itemId = item['id']
-            saleInfo = db.execute("SELECT * FROM bids WHERE itemId = ? AND offerStatus = 'sold'", itemId)
-            item['bidsInfo'] = saleInfo[0]
-            item['bidsInfo']['bidderName'] = db.execute("SELECT username FROM users WHERE id = ?", item['bidsInfo']['bidderId'])[0]['username']
-        
-
+        if len(soldItems) > 0:
+            for item in soldItems:
+                item['filename'] = f"./static/saved/{item['filename']}"
+                itemId = item['id']
+                saleInfo = db.execute("SELECT * FROM bids WHERE itemId = ? AND offerStatus = 'sold'", itemId)
+                if len(saleInfo) > 0:
+                    item['bidsInfo'] = saleInfo[0]
+                    item['bidsInfo']['bidderName'] = db.execute("SELECT username FROM users WHERE id = ?", item['bidsInfo']['bidderId'])[0]['username']
+                else: 
+                    soldItems = False
+        else:
+            soldItems = False
 
         ## Write script to show all purchased items
-        boughtItems = db.execute("SELECT * FROM items JOIN bids ON items.id = bids.itemId WHERE bids.bidderId = ? AND offerStatus = 'sold'", user_id)
+        boughtItems = db.execute("SELECT * FROM items JOIN bids ON items.id = bids.itemId WHERE bids.bidderId = ? AND bids.offerStatus = 'sold' AND items.saleStatus = 'sold'", user_id)
+        if len(boughtItems) > 0:
+            for item in boughtItems:
+                item['filename'] = f"./static/saved/{item['filename']}"
+                itemId = item['id']
+                sellerName = db.execute("SELECT username FROM users WHERE id = ?", item['ownerId'])
+                item['sellerName'] = sellerName[0]['username']
+                
 
         ## Capture select dropdown
         
 
-        displayOption = 10
-        display = boughtItems
-        return render_template("transactions.html", soldItems = soldItems, display=display, displayOption = displayOption)
+        boughtItems = boughtItems
+        return render_template("transactions.html", soldItems = soldItems, boughtItems=boughtItems)
     
-    else:
-        
-
-        return render_template("transactions.html", soldItems = soldItems, display=display, displayOption = displayOption)
+    # else:
+    #     return render_template("transactions.html", soldItems = soldItems)
         
 
 @app.route("/createsale", methods=["GET", "POST"])
@@ -269,14 +295,15 @@ def createsale():
             itemName = request.form.get("item-name")
             itemDescription = request.form.get("item-description")
             itemPrice = request.form.get("item-price")
-            itemPrice = '{:,.2f}'.format(float(itemPrice))
+            itemPrice = '${:,.2f}'.format(float(itemPrice))
+            print("hi yes", itemPrice)
             itemStatus = "available"
             db.execute("INSERT INTO items (name, description, filename, ownerId, askingPrice, saleStatus) VALUES(?, ?, ?, ?, ?, ?)", itemName, itemDescription, filename, user_id, itemPrice, itemStatus)
 
             message="Item Successfully Uploaded!"
             return render_template("createsale.html", message=message)
     else:
-        message = "Fresh load!"
+        message = ''
         return render_template("createsale.html", message=message)
 
 @app.route("/yourbids")

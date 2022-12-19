@@ -28,7 +28,6 @@ p {
     align-items: center;
 }
 
-
 .bordered {
     border: 1px solid black;
 }
@@ -37,7 +36,7 @@ p {
     text-align: left !important;
 }
 
-.bordered ul li span, .bordered p span {
+.bold {
     font-weight: bold;
 }
 
@@ -66,4 +65,8 @@ input[type='number'] {
     width: 50%;
     margin: auto;
     margin-bottom: 10px;
+}
+
+#bought-items {
+    display: none;
 }

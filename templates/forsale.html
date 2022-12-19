@@ -6,22 +6,44 @@ Your For Sale Page!
 {% block main %}
 {% if allItems %}
 <h2>All items available for sale:</h2>
+
+<div class="alert alert-success" id="sale-alert" role="alert">
+  {{ message }}
+</div>
+
 <div class="flex-container">
 {% for item in allItems %}
 
   <div class="bordered" id="saleitem">
-    <p>Name: {{ item['name'] }}</p>
-    <p>Description: {{ item['description'] }}</p>
-    <p>Asking Price: ${{ item['askingPrice'] }}</p>
+    <p>Name: <span class="bold">{{ item['name'] }}</span></p>
+    <p>Description: <span class="bold">{{ item['description'] }}</span></p>
+    <p>Asking Price: <span class="bold">${{ item['askingPrice'] }}</span></p>
     <img src="{{ item['filename'] }}" width="500" />
     <form action="/forsale" method="post">
         <input autocomplete="off" class="form-control mx-auto w-auto margin-top" name="biditem--{{ item['id'] }}" placeholder="Enter a bid for this item" type="number" min="0.01" step="0.01">
         <button class="btn btn-primary margin-top margin-bottom" type="submit">Submit</button>
     </form>
+    {% if item['pastBids'] %}
+    <p>You have previously bid on this item:</p>
+    <ul>
+    {% for pastBid in item['pastBids'] %}
+      <li><span class="bold">{{ pastBid['offerPrice'] }}</span>, made on <span class="bold">{{ pastBid['datetime'] }}</span></li>    
+    {% endfor %}
+  </ul>
+    {% endif %}
   </div>
 
 {% endfor %} 
 </div>
 {% else %}
 <h2>There are no items for sale!</h2>
-{% endif %} {% endblock %}
+{% endif %} 
+
+<script>
+  if (document.getElementById("sale-alert").innerText === "") {
+    document.getElementById("sale-alert").style.backgroundColor = "white";
+    document.getElementById("sale-alert").style.border = "none";
+  }
+  </script>
+
+{% endblock %}

@@ -3,39 +3,46 @@
 
 <h1>Your Transactions</h1>
 
-<div id="transactions_container"></div>
-
-<div class="alert alert-primary" role="alert">
-  {% for item in display %}
-  {{ item }}
-  <br><br>
-  {% endfor %}
-  
-
-</div>
-
-
-
 <form action="/transactions"></form>
 <select class="form-select" name="transactions">
   <option value="sold">Sold items</option>
   <option value="bought">Bought items</option>
 </select>
 
-
-
-<div class="flex-container">
-  {% for item in soldItems %}
+<div id="sold-items" class="flex-container">
+  {% if soldItems %}
+  <h2>Sold Items</h2>
+  {% for soldItem in soldItems %}
 
   <div class="bordered">
-    <p>Name: <span>{{ item['name'] }}</span></p>
-    <img src="{{ item['filename'] }}" width="500" />
-    <p>Description: <span>{{ item['description'] }}</span></p>
-    <p>Selling Price: <span>{{ item['bidsInfo']['offerPrice'] }}</span></p>
-    <p>Sold to: <span>{{ item['bidsInfo']['bidderName'] }}</span></p>
-    <p>Date sold: <span>{{ item['bidsInfo']['datetime'] }}</span></p>
+    <p>Name: <span class="bold">{{ soldItem['name'] }}</span></p>
+    <img src="{{ soldItem['filename'] }}" width="500" />
+    <p>Description: <span class="bold">{{ soldItem['description'] }}</span></p>
+    <p>Selling Price: <span class="bold">{{ soldItem['bidsInfo']['offerPrice'] }}</span></p>
+    <p>Sold to: <span class="bold">{{ soldItem['bidsInfo']['bidderName'] }}</span></p>
+    <p>Date sold: <span class="bold">{{ soldItem['bidsInfo']['datetime'] }}</span></p>
   </div>
-  {% endfor %} 
+  {% endfor %}
+  {% endif %}
+</div>
+
+<div id="bought-items" class="flex-container">
+  {% if boughtItems %}
+  <h2>Bought Items</h2>
+  {% for boughtItem in boughtItems %}
+
+  <div class="bordered">
+    <p>Name: <span class="bold">{{ boughtItem['name'] }}</span></p>
+    <img src="{{ boughtItem['filename'] }}" width="500" />
+    <p>Description: <span class="bold">{{ boughtItem['description'] }}</span></p>
+    <p>Selling Price: <span class="bold">{{ boughtItem['offerPrice'] }}</span></p>
+    <p>Purchased from from: <span class="bold">{{ boughtItem['sellerName'] }}</span></p>
+    <p>Date purchased: <span class="bold">{{ boughtItem['datetime'] }}</span></p>
+  </div>
+  {% endfor %}
+  {% endif %}
+</div>
+
 </div>
 
 
