@@ -92,7 +92,6 @@ def index():
         # Update SQL items table to reflect approved sale
         db.execute("UPDATE items SET saleStatus = 'sold' WHERE id = ?", int(itemId))
 
-        # This is all repeated. Clean this up.
         allItems = db.execute("SELECT * FROM items WHERE ownerId = ? AND saleStatus = ?", user_id, "available")
         for item in allItems:
             item['filename'] = f"./static/saved/{item['filename']}"
@@ -330,53 +329,6 @@ def yourbids():
     return render_template("yourbids.html", your_bids=your_bids)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#---------------------------------------------------------
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-# @app.route('/createsale', methods=['GET', 'POST'])
-# def upload_file():
-#     if request.method == 'POST':
-#         # check if the post request has the file part
-#         if 'file' not in request.files:
-#             flash('No file part')
-#             return apology("No file included")
-#         file = request.files['file']
-#         # If the user does not select a file, the browser submits an
-#         # empty file without a filename.
-#         if file.filename == '':
-#             flash('No selected file')
-#             return apology("No file included")
-#         if file and allowed_file(file.filename):
-#             filename = secure_filename(file.filename)
-#             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-#             thing="Successful upload!"
-#             return render_template("createsale.html", thing=thing)
-#     return '''
-#     <!doctype html>
-#     <title>Upload new File</title>
-#     <h1>Upload new File</h1>
-#     <form method=post enctype=multipart/form-data>
-#       <input type=file name=file>
-#       <input type=submit value=Upload>
-#     </form>
-#     '''
