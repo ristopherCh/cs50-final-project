@@ -2,11 +2,31 @@
 main %}
 <h1>Your bids</h1>
 
-  <ul class="ul-centered">
+
     {% for bid in your_bids %}
-    <li>Item: {{ bid['name'] }} Bid: {{ bid['offerPrice'] }} Date: {{ bid['datetime'] }} Status: {{ bid['saleStatus'] }}</li>
+    <div class="bordered">
+      {% if bid['offerStatus'] == 'sold' %}
+      <div class="alert alert-success" role="alert">
+        Your bid won the auction!
+      </div>
+      {% endif %}
+      {% if bid['offerStatus'] == 'unavailable' %}
+      <div class="alert alert-danger" role="alert">
+        This bid was rejected.
+      </div>
+      {% endif %}
+      {% if bid['offerStatus'] == 'active' %}
+      <div class="alert alert-warning" role="alert">
+        This auction is pending.
+      </div>
+      {% endif %}
+      <img src="{{ bid['filename'] }}" width="250" />
+      <div>Item: <span class="bold">{{ bid['name'] }}</span> <div>Bid: <span class="bold">{{ bid['offerPrice'] }}</span></div> <div>Date: <span class="bold">{{ bid['datetime'] }}</span></div></div>
+      
+      <!-- <div class="bordered-pink">{{ bid }}</div> -->
+    </div>
     {% endfor %}
-  </ul>
+  
 
 
 {% endblock %}

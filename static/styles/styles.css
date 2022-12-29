@@ -32,8 +32,12 @@ p {
     border: 1px solid black;
 }
 
+.bordered-pink {
+    border: 1px solid pink;
+}
+
 .bordered ul {
-    text-align: left !important;
+    /* text-align: left !important; */
 }
 
 .bold {

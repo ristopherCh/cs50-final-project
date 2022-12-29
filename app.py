@@ -1,4 +1,5 @@
 import os
+import datetime
 
 from cs50 import SQL
 from flask import Flask, flash, url_for, render_template, redirect, request, session
@@ -79,6 +80,9 @@ def index():
         # Update SQL bids table to reflect approved sale
         db.execute("UPDATE bids SET offerStatus = 'sold' WHERE id = ?", int(purchasedBidId))
         db.execute("UPDATE bids SET offerStatus = 'unavailable' WHERE id != ? AND itemId = ?", int(purchasedBidId), itemId)
+        x = datetime.datetime.now()
+        current_date = x.strftime("%a") + ' ' + x.strftime("%b") + ' ' + x.strftime("%d") + ' ' + x.strftime("%Y") + ' ' + x.strftime("%X")
+        db.execute("UPDATE bids SET saleDate = ? WHERE id = ?", current_date, int(purchasedBidId))
 
         # Update SQL items table to reflect approved sale
         db.execute("UPDATE items SET saleStatus = 'sold' WHERE id = ?", int(itemId))
@@ -191,9 +195,13 @@ def forsale():
     pastBids = db.execute("SELECT * FROM bids WHERE bidderId = ?", user_id)
     for item in allItems:
             item['filename'] = f"./static/saved/{item['filename']}"
+            sellerName = db.execute("SELECT username FROM users WHERE id = ?", item['ownerId'])[0]['username']
+            item['sellerName'] = sellerName
             pastBids = db.execute("SELECT * FROM bids WHERE bidderId = ? AND itemId = ?", user_id, item['id'])
             if len(pastBids) > 0:
                 item['pastBids'] = pastBids
+        
+            
     
     ## When item is bid on:
     if request.method == "POST":
@@ -201,18 +209,25 @@ def forsale():
             if key.startswith('biditem'):
                 itemId = key.partition('--')[-1]
                 value = request.form[key]
+                if value == '':
+                    return apology('Must provide bid amount')
                 value = '${:,.2f}'.format(float(value))
         
         sellerId = db.execute("SELECT ownerId FROM items WHERE id = ?", itemId)
         sellerId = sellerId[0]['ownerId']
         
-        db.execute("INSERT INTO bids (itemId, bidderId, sellerId, offerPrice, offerStatus, datetime) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)", itemId, user_id, sellerId, value, "active")
+        x = datetime.datetime.now()
+        current_date = x.strftime("%a") + ' ' + x.strftime("%b") + ' ' + x.strftime("%d") + ' ' + x.strftime("%Y") + ' ' + x.strftime("%X")
+        
+        db.execute("INSERT INTO bids (itemId, bidderId, sellerId, offerPrice, offerStatus, datetime) VALUES (?, ?, ?, ?, ?, ?)", itemId, user_id, sellerId, value, "active", current_date)
 
         ## Have to replicate this code to get the updated database after the Insert above. Fix this.
         allItems = db.execute("SELECT * FROM items WHERE ownerId != ? AND saleStatus = ?", user_id, "available")
         pastBids = db.execute("SELECT * FROM bids WHERE bidderId = ?", user_id)
         for item in allItems:
             item['filename'] = f"./static/saved/{item['filename']}"
+            sellerName = db.execute("SELECT username FROM users WHERE id = ?", item['ownerId'])[0]['username']
+            item['sellerName'] = sellerName
             pastBids = db.execute("SELECT * FROM bids WHERE bidderId = ? AND itemId = ?", user_id, item['id'])
             if len(pastBids) > 0:
                 item['pastBids'] = pastBids
@@ -223,18 +238,6 @@ def forsale():
     else:
         message=''
         return render_template("forsale.html", allItems=allItems, message=message)
-
-@app.route("/offers")
-def offers():
-    user_id = session["user_id"]
-    # allItems = db.execute("SELECT * FROM items WHERE ownerId = ? AND saleStatus = ?", user_id, "available")
-    # for item in allItems:
-    #     item['filename'] = f"./static/saved/{item['filename']}"
-    
-    allBids = db.execute("SELECT * FROM bids WHERE sellerId = ? AND offerStatus = ?", user_id, "active")
-
-
-    return render_template("offers.html")
 
 @app.route("/transactions", methods=["GET", "POST"])
 def transactions():
@@ -289,6 +292,12 @@ def createsale():
         if file.filename == '':
             flash('No selected file')
             return apology("Filename invalid")
+        if request.form.get("item-name") == '':
+            return apology("Must enter item name")
+        if request.form.get("item-description") == '':
+            return apology("Must enter item description")
+        if request.form.get("item-price") == '':
+            return apology("Must enter item price")
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
@@ -310,6 +319,8 @@ def createsale():
 def yourbids():
     user_id = session["user_id"]
     your_bids = db.execute("SELECT * FROM bids LEFT JOIN items ON bids.itemId = items.id WHERE bids.bidderId = ?", user_id)
+    for item in your_bids:
+        item['filename'] = f"./static/saved/{item['filename']}"
     
     return render_template("yourbids.html", your_bids=your_bids)
 

@@ -20,7 +20,7 @@
     <p>Description: <span class="bold">{{ soldItem['description'] }}</span></p>
     <p>Selling Price: <span class="bold">{{ soldItem['bidsInfo']['offerPrice'] }}</span></p>
     <p>Sold to: <span class="bold">{{ soldItem['bidsInfo']['bidderName'] }}</span></p>
-    <p>Date sold: <span class="bold">{{ soldItem['bidsInfo']['datetime'] }}</span></p>
+    <p>Date sold: <span class="bold">{{ soldItem['bidsInfo']['saleDate'] }}</span></p>
   </div>
   {% endfor %}
   {% endif %}
@@ -37,7 +37,7 @@
     <p>Description: <span class="bold">{{ boughtItem['description'] }}</span></p>
     <p>Selling Price: <span class="bold">{{ boughtItem['offerPrice'] }}</span></p>
     <p>Purchased from from: <span class="bold">{{ boughtItem['sellerName'] }}</span></p>
-    <p>Date purchased: <span class="bold">{{ boughtItem['datetime'] }}</span></p>
+    <p>Date purchased: <span class="bold">{{ boughtItem['saleDate'] }}</span></p>
   </div>
   {% endfor %}
   {% endif %}
