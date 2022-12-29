@@ -35,6 +35,11 @@ def after_request(response):
     response.headers["Pragma"] = "no-cache"
     return response
 
+@app.route("/", methods=["POST", "GET"])
+@login_required
+def homepage():
+    return index()
+
 @app.route("/index", methods=["POST", "GET"])
 @login_required
 def index():
@@ -309,7 +314,7 @@ def createsale():
             itemStatus = "available"
             db.execute("INSERT INTO items (name, description, filename, ownerId, askingPrice, saleStatus) VALUES(?, ?, ?, ?, ?, ?)", itemName, itemDescription, filename, user_id, itemPrice, itemStatus)
 
-            message="Item Successfully Uploaded!"
+            message="Your sale is now live!"
             return render_template("createsale.html", message=message)
     else:
         message = ''

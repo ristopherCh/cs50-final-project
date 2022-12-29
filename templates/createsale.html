@@ -2,7 +2,11 @@
 block main %}
 <h1>Create New Sale</h1>
 
-<h2>{{ message }}</h2>
+<!-- <h2>{{ message }}</h2> -->
+
+<div class="alert alert-success" id="creation-alert" role="alert">
+  {{ message }}
+</div>
 
 
 <form action="/createsale" method="post" enctype="multipart/form-data">
@@ -37,5 +41,12 @@ block main %}
     <button class="btn btn-primary" type="submit">Submit</button>
   </div>
 </form>
+
+<script>
+  if (document.getElementById("creation-alert").innerText === "") {
+    document.getElementById("creation-alert").style.backgroundColor = "white";
+    document.getElementById("creation-alert").style.border = "none";
+  }
+</script>
 
 {% endblock %}
