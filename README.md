@@ -2,8 +2,8 @@
 #### Video Demo:  <URL https://www.youtube.com/watch?v=07QwSRYMB6s>
 #### Description:
 
-Bid Frenzy is a marketplace site where users can offer items for sale, as well as make, accept, and reject bids for those offers.\
-It was created using HTML, CSS, Bootstrap, JavaScript, Python, SQLite3, and Flask. \
+Bid Frenzy is a marketplace site where users can offer items for sale, as well as make, accept, and reject bids for those offers.
+It was created using HTML, CSS, Bootstrap, JavaScript, Python, SQLite3, and Flask. 
 
 I created an HTML template called layout.html, and all other HTML pages extend this layout using the "extends" funcitonality provided by Flask. The Navbar was created using Bootstrap, as were many notifications that pop up when using the app.
 
