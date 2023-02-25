@@ -1,5 +1,5 @@
 # Bid Frenzy!
-#### Video Demo:  <URL https://www.youtube.com/watch?v=07QwSRYMB6s>
+#### [Click for a video demo!](https://www.youtube.com/watch?v=07QwSRYMB6s)
 #### Description:
 
 Bid Frenzy is a marketplace site where users can offer items for sale, as well as make, accept, and reject bids for those offers.
